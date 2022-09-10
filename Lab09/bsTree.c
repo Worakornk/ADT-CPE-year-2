@@ -12,11 +12,11 @@ typedef node_t bst_t;
 // Write your code here
 // ...
 
-bst_t * find(bst_t * root, int v)
+bst_t * locate(bst_t * root, int v)
 {
     if (root == NULL)
     {
-        return NULL;
+        return root;
     }
     if (root->data == v)
     {
@@ -24,11 +24,23 @@ bst_t * find(bst_t * root, int v)
     }
     if (v < root->data)
     {
-        return find(root->left);
+        return locate(root->left,v);
+    }
+    if (v > root->data)
+    {
+        return locate(root->right,v);
+    }
+}
+
+int find(bst_t * root, int v)
+{
+    if (locate(root,v) == NULL)
+    {
+        return 0;
     }
     else
     {
-        return find(root->right);
+        return 1;
     }
 }
 
@@ -68,10 +80,10 @@ int find_max(bst_t * root)
     return current_pos->data;
 } 
 
-bst_t * create()
+bst_t * create(int data)
 {
     bst_t * node = (bst_t *)malloc(sizeof(bst_t));
-    node->data = NULL;
+    node->data = data;
     node->left = NULL;
     node->right = NULL;
     return node;
@@ -81,57 +93,61 @@ bst_t * insert(bst_t * root, int data)
 {
     if (root == NULL)
     {
-        bst_t * root = create();
-        root->data = data;
+        bst_t * root = create(data);
         return root;
     }
     if (data < root->data)
     {
-        return insert(root->left,data);
+        root->left = insert(root->left,data);
     }
     if (data > root->data)
     {
-        return insert(root->right,data);
-    }   
+        root->right = insert(root->right,data);
+    }
+    return root;
 }
 
-bst_t *find_parent(bst_t * root, int data)
-{
-    if (root == NULL)
-    {
-        return NULL;
-    }
-    if (root->right == data || root->left == data)
-    {
-        return root;
-    }
-    if (data < root->data)
-    {
-        return find_parent(root->left);
-    }
-    if (data > root->data)
-    {
-        return find_parent(root->right);
-    }
-}
 
 bst_t * delete(bst_t * root, int data)
 {
-    bst_t * del_pos = find(root,data);
-
-    // Case #1 --> leaf node
-    if (del_pos->left == NULL && del_pos->right == NULL)
+    if (root == NULL)
     {
-
-
+        return root;
     }
-
-    // Case #2 --> Node has 1 child
-
-    // Case #3 --> Node has 2 children
-
+    if (data < root->data)
+    {
+        root->left = delete(root->left,data);
+    }
+    else if (data > root->data)
+    {
+        root->right = delete(root->right,data);
+    }
+    else
+    {
+        // 1 child & leaf node
+        if (root->left == NULL)
+        {
+            bst_t * temp = root->right;
+            free(root);
+            return temp;
+        }
+        else if (root->right == NULL)
+        {
+            bst_t * temp = root->left;
+            free(root);
+            return temp;
+        }
+        // 2 children
+        bst_t * temp = root->right;
+        while (temp->left != NULL)
+        {
+            temp = temp->left;
+        }
+        root->data = temp->data;
+        root->right = delete(root->right,temp->data);
+    }
+    return root;
 }
-
 
 int main(void) {
     bst_t *t = NULL;
