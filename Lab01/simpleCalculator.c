@@ -1,0 +1,23 @@
+#include <stdio.h>
+
+int main(){
+    int x,y;
+    char o;
+    scanf("%d %c %d",x,o,y);
+    if (o == "+"){
+        printf("%d",x+y);
+    }
+    else if (o == "-"){
+        printf("%d",x-y);
+    }
+    else if (o == "*"){
+        printf("%d",x*y);
+    }
+    else if (o == "/"){
+        printf("%.2lf",x/y);
+    }
+    else {
+        printf("Unknown Operator");
+    }
+    return 0;
+}
