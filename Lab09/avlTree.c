@@ -1,14 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "week9.h"
+#include <week9.h>
 
 #ifndef __avl_tree__
-typedef struct node
-{
-    int data;
-    int height;
-    struct node *left;
-    struct node *right;
+typedef struct node {
+  int data;
+  int height;
+  struct node *left;
+  struct node *right;
 } node_t;
 
 typedef node_t avl_t;
@@ -20,217 +19,165 @@ typedef node_t avl_t;
 // included in the week9.h header
 // ...
 
-int max(int a, int b)
+avl_t * single_rot_left(avl_t * y)
 {
-    if (a > b)
-    {
-        return a;
-    }
-    else
-    {
-        return b;
-    }
-}
-
-int height(node_t *node)
-{
-    if (node == NULL)
-    {
-        return 0;
-    }
-    else
-    {
-        return node->height;
-    }
-}
-
-node_t *new_node(int data)
-{
-    node_t *new_node = (node_t *)malloc(sizeof(node_t));
-    new_node->data = data;
-    new_node->left = NULL;
-    new_node->right = NULL;
-    new_node->height = 1;
-    return new_node;
-}
-
-node_t *right_rotate(node_t *y)
-{
-    node_t *x = y->left;
-    node_t *T2 = x->right;
-    x->right = y;
-    y->left = T2;
-    y->height = max(height(y->left), height(y->right)) + 1;
-    x->height = max(height(x->left), height(x->right)) + 1;
+    avl_t* x=y->left;
+    y->left=x->right;
+    x->right=y;
+    y->height=max(height(y->left),height(y->right))+1;
+    x->height=max(height(x->left),y->height)+1;
     return x;
 }
 
-node_t *left_rotate(node_t *x)
+avl_t * single_rot_right(avl_t * y)
 {
-    node_t *y = x->right;
-    node_t *T2 = y->left;
-    y->left = x;
-    x->right = T2;
-    x->height = max(height(x->left), height(x->right)) + 1;
-    y->height = max(height(y->left), height(y->right)) + 1;
-    return y;
+    avl_t* x=y->right;
+    y->right=x->left;
+    x->left=y;
+    y->height=max(height(y->left),height(y->right))+1;
+    x->height=max(height(x->right),y->height)+1;
+    return x;
 }
 
-int get_balance(node_t *node)
+avl_t * double_rot_left(avl_t * k3)
 {
-    if (node == NULL)
+    k3->left=single_rot_right(k3->left);
+    return single_rot_left(k3);
+}
+
+avl_t * double_rot_right(avl_t * k3)
+{
+    k3->right=single_rot_left(k3->right);
+    return single_rot_right(k3);
+}
+
+avl_t * insert(avl_t * root, int data)
+{
+  if (root == NULL) {
+    root = (avl_t*)malloc(sizeof(avl_t));
+    root->data = data;
+    root->height = 0;
+    root->left = NULL;
+    root->right = NULL;
+  } 
+  else if (data < root->data) 
+  {
+    root->left = insert(root->left, data);
+    if (height(root->left) - height(root->right) == 2) {
+      if (data < root->left->data) {
+        root = single_rot_left(root);
+      } else {
+        root = double_rot_left(root);
+      }
+    }
+  } 
+  else if (data > root->data) 
+  {
+    root->right = insert(root->right, data);
+    if (height(root->right) - height(root->left) == 2) {
+      if (data > root->right->data) {
+        root = single_rot_right(root);
+      } else {
+        root = double_rot_right(root);
+      }
+    }
+  }
+  root->height = max(height(root->left), height(root->right)) + 1;
+  return root;
+}
+
+int height(avl_t* root)
+{
+    if(root == NULL)
     {
-        return 0;
+        return -1;
     }
     else
     {
-        return height(node->left) - height(node->right);
+        return root->height;
     }
 }
 
-node_t *min_value_node(node_t *node)
+int max(int a,int b)
 {
-    node_t *current = node;
-    while (current->left != NULL)
-    {
-        current = current->left;
-    }
-    return current;
+    return a > b ? a : b;
 }
 
-avl_t *insert(avl_t *root, int data)
+avl_t * delete(avl_t* root, int data)
 {
-    if (root == NULL)
-    {
-        root = (avl_t *)malloc(sizeof(avl_t));
-        root->data = data;
-        root->left = NULL;
-        root->right = NULL;
-        root->height = 0;
-        return root;
+  if (root == NULL) 
+  {
+    return NULL;
+  } 
+  else if (data < root->data) 
+  {
+    root->left = delete(root->left, data);
+    if (height(root->right) - height(root->left) == 2) {
+      if (height(root->right->left) > height(root->right->right)) {
+        root = double_rot_right(root);
+      } else {
+        root = single_rot_right(root);
+      }
     }
-    if (data < root->data)
-    {
-        root->left = insert(root->left, data);
+  } 
+  else if (data > root->data) 
+  {
+    root->right = delete(root->right, data);
+    if (height(root->left) - height(root->right) == 2) {
+      if (height(root->left->right) > height(root->left->left)) {
+        root = double_rot_left(root);
+      } else {
+        root = single_rot_left(root);
+      }
     }
-    else if (data > root->data)
-    {
-        root->right = insert(root->right, data);
+  } 
+  else 
+  {
+    if (root->left != NULL && root->right != NULL) {
+      avl_t* tmp = root->right;
+      while (tmp->left != NULL) {
+        tmp = tmp->left;
+      }
+      root->data = tmp->data;
+      root->right = delete(root->right, root->data);
+    } else {
+      avl_t* tmp = root;
+      if (root->left == NULL) {
+        root = root->right;
+      } else if (root->right == NULL) {
+        root = root->left;
+      }
+      free(tmp);
     }
-    else
-    {
-        return root;
-    }
-    root->height = 1 + max(height(root->left), height(root->right));
-    int balance = get_balance(root);
-    if (balance > 1 && data < root->left->data)
-    {
-        return right_rotate(root);
-    }
-    if (balance < -1 && data > root->right->data)
-    {
-        return left_rotate(root);
-    }
-    if (balance > 1 && data > root->left->data)
-    {
-        root->left = left_rotate(root->left);
-        return right_rotate(root);
-    }
-    if (balance < -1 && data < root->right->data)
-    {
-        root->right = right_rotate(root->right);
-        return left_rotate(root);
-    }
-    return root;
+  }
+  if (root != NULL) {
+    root->height = max(height(root->left), height(root->right)) + 1;
+  }
+  return root;
 }
 
-avl_t *delete (avl_t *root, int data)
-{
-    if (root == NULL)
-    {
-        return root;
-    }
-    if (data < root->data)
-    {
-        root->left = delete (root->left, data);
-    }
-    else if (data > root->data)
-    {
-        root->right = delete (root->right, data);
-    }
-    else
-    {
-        if (root->left == NULL || root->right == NULL)
-        {
-            avl_t *temp = root->left ? root->left : root->right;
-            if (temp == NULL)
-            {
-                temp = root;
-                root = NULL;
-            }
-            else
-            {
-                *root = *temp;
-            }
-            free(temp);
-        }
-        else
-        {
-            avl_t *temp = min_value_node(root->right);
-            root->data = temp->data;
-            root->right = delete (root->right, temp->data);
-        }
-    }
-    if (root == NULL)
-    {
-        return root;
-    }
-    root->height = 1 + max(height(root->left), height(root->right));
-    int balance = get_balance(root);
-    if (balance > 1 && get_balance(root->left) >= 0)
-    {
-        return right_rotate(root);
-    }
-    if (balance > 1 && get_balance(root->left) < 0)
-    {
-        root->left = left_rotate(root->left);
-        return right_rotate(root);
-    }
-    if (balance < -1 && get_balance(root->right) <= 0)
-    {
-        return left_rotate(root);
-    }
-    if (balance < -1 && get_balance(root->right) > 0)
-    {
-        root->right = right_rotate(root->right);
-        return left_rotate(root);
-    }
-    return root;
-}
 
-int main(void)
-{
-    avl_t *t = NULL;
-    int n, i;
-    int command, data;
-    scanf("%d", &n);
-    for (i = 0; i < n; i++)
-    {
-        scanf("%d", &command);
-        switch (command)
-        {
-        case 1:
-            scanf("%d", &data);
-            t = insert(t, data);
-            break;
-        case 2:
-            scanf("%d", &data);
-            t = delete (t, data);
-            break;
-        case 3:
-            print_tree(t);
-            break;
-        }
+int main(void) {
+  avl_t *root = NULL;
+  int n, i;
+  int command, data;
+
+  scanf("%d", &n);
+  for (i = 0; i < n; i++) {
+    scanf("%d", &command);
+    switch (command) {
+    case 1:
+      scanf("%d", &data);
+      root = insert(root, data);
+      break;
+    case 2:
+      scanf("%d", &data);
+      root = delete (root, data);
+      break;
+    case 3:
+      print_tree(root);
+      break;
     }
-    return 0;
+  }
+  return 0;
 }
