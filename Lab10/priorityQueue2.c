@@ -1,0 +1,124 @@
+// same as priorityQueue.c
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct heap {
+  int *data;
+  int last_index;
+} heap_t;
+
+heap_t *init_heap(int size){
+  heap_t *first = malloc(sizeof(heap_t));
+  first->data = malloc(size*sizeof(int));
+  first->last_index = 1;
+  return first;
+}
+
+void percolations(heap_t *t,int i){
+  if(i/2 == 0){
+    return;
+  }
+  if(t->data[i/2]<t->data[i]){
+    int tmp = t->data[i];
+    t->data[i] = t->data[i/2];
+    t->data[i/2] = tmp;
+    percolations(t,i/2);
+  }
+}
+
+void reversePercolations(heap_t *t,int i){
+  if((i*2)+1 >= t->last_index){
+    return;
+  }
+  if(t->data[i] < t->data[(2*i)]){
+    int tmp = t->data[(2*i)];
+    t->data[(2*i)] = t->data[i];
+    t->data[i] = tmp;
+    reversePercolations(t,(2*i));
+  }
+  else if(t->data[i] < t->data[(2*i)+1]){
+    int tmp = t->data[(2*i)+1];
+    t->data[(2*i)+1] = t->data[i];
+    t->data[i] = tmp;
+    reversePercolations(t,(2*i)+1);
+  }
+}
+
+void insert(heap_t *t,int value){
+  t->data[t->last_index] = value;
+  percolations(t,t->last_index);
+  t->last_index += 1;
+}
+
+void delete_max(heap_t *t){
+  if(t->last_index == 1){
+    return;
+  }
+  t->last_index -= 1;
+  t->data[1] = t->data[t->last_index];
+  reversePercolations(t,1);
+}
+
+void update_key(heap_t *t,int old_value,int new_value){
+  int i;
+  for(i=1;i<t->last_index;i++){
+    if(t->data[i] == old_value){
+      t->data[i] = new_value;
+      break;
+    }
+  }
+  percolations(t,i);
+  reversePercolations(t,i);
+}
+
+int find_max(heap_t *t){
+  if (t->last_index == 0)
+  {
+    return -1;
+  }
+  else 
+  {
+    return t->data[1];
+  }
+}
+
+void bfs(heap_t *t){
+  int i;
+  for(i=1;i<t->last_index;i++){
+    printf("%d ",t->data[i]);
+  }
+  printf("\n");
+}
+
+int main(void) {
+  heap_t *max_heap = NULL;
+  int    m, n, i;
+  int    command, data;
+  int    old_key, new_key;
+
+  scanf("%d %d", &m, &n);
+  max_heap = init_heap(m);
+  for (i=0; i<n; i++) {
+    scanf("%d", &command);
+    switch (command) {
+      case 1:
+        scanf("%d", &data);
+        insert(max_heap, data);
+        break;
+      case 2:
+        delete_max(max_heap);
+        break;
+      case 3:
+        printf("%d\n", find_max(max_heap));
+        break;
+      case 4:
+        scanf("%d %d", &old_key, &new_key);
+        update_key(max_heap, old_key,new_key);
+        break;
+      case 5:
+        bfs(max_heap);
+        break;
+    }
+  }
+  return 0;
+}
