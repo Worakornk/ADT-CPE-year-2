@@ -27,50 +27,49 @@ memory_t *init_memory(int size)
     return memory;
 }
 
-unsigned int Cache_index(int memory_addr, int cache_size)
+unsigned int cache_index(int mem_addr, int cache_size)
 {
-    return memory_addr % cache_size;
+    return mem_addr % cache_size;
 }
 
 cache_t *init_cache(int cache_size)
 {
-    cache_t * cache = (cache_t *)malloc(sizeof(cache_t));
-    cache->cache_size = cache_size;
-    cache->table = (cell_t *)malloc(sizeof(cell_t) * cache_size);
+    cache_t *mem = (cache_t *)malloc(sizeof(cache_t));
+    mem->table = (cell_t *)malloc(sizeof(cell_t) * cache_size);
+    mem->cache_size = cache_size;
     int i = 0;
     for (i = 0; i < cache_size; i++)
     {
-        cache->table[i].data = 0;
-        cache->table[i].mem_addr = -1;
+        mem->table[i].data = -1;
+        mem->table[i].mem_addr = -1;
     }
-    return cache;
+    return mem;
 }
 
-void get_data(int addr, memory_t * memmory, cache_t *cache)
+void get_data(int addr, memory_t *mem, cache_t *cache)
 {
     int i = 0, j = 0;
-    int index = Cache_index(addr, cache->cache_size);
-    if (memmory[addr] == cache->table[index].data)
+    int cindex = cache_index(addr, cache->cache_size);
+    if (mem[addr] == cache->table[cindex].data)
     {
         printf("Address %d is loaded\n", addr);
     }
     else
     {
-        if (cache->table[index].data == -1 && cache->table[index].mem_addr == -1)
+        if (cache->table[cindex].data == -1 && cache->table[cindex].mem_addr == -1)
         {
             printf("Load from memory\n");
         }
         else
         {
-            printf("Index: %d is used\n", index);
+            printf("Index: %d is used\n", cindex);
             printf("Load from memory\n");
         }
-        cache->table[index].data = memmory[addr];
-        cache->table[index].mem_addr = addr;
+        cache->table[cindex].data = mem[addr];
+        cache->table[cindex].mem_addr = addr;
     }
-    printf("Data: %d\n", cache->table[index].data);
+    printf("Data: %d\n", cache->table[cindex].data);
 }
-
 
 int main(void)
 {

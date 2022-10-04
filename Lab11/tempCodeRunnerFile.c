@@ -49,7 +49,7 @@ cache_t *init_cache(int cache_size)
 void get_data(int addr, memory_t * memmory, cache_t *cache)
 {
     int i = 0, j = 0;
-    int index = Cache_index(addr, cache->cache_size);
+    int index = cache_index(addr, cache->cache_size);
     if (memmory[addr] == cache->table[index].data)
     {
         printf("Address %d is loaded\n", addr);

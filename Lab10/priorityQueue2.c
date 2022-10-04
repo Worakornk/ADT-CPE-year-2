@@ -1,4 +1,4 @@
-// same as priorityQueue.c
+// same as priorityQueue.c but from FORTRAN's code
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -72,14 +72,13 @@ void update_key(heap_t *t,int old_value,int new_value){
 }
 
 int find_max(heap_t *t){
-  if (t->last_index == 0)
-  {
-    return -1;
+  int i,max = -1;
+  for(i=1;i<t->last_index;i++){
+    if(t->data[i] > max){
+      max = t->data[i];
+    }
   }
-  else 
-  {
-    return t->data[1];
-  }
+  return max;
 }
 
 void bfs(heap_t *t){
